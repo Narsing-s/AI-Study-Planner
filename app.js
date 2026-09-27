@@ -1,4 +1,3 @@
-const $=id=>document.getElementById(id);
 const KEY="ai-study-planner-v2";
 let state=JSON.parse(localStorage.getItem(KEY)||"null")||{plan:null,completed:{},quizScores:{}};
 const topics={Java:["Syntax & types","OOP fundamentals","Collections","Exceptions & streams","Concurrency","Testing & projects"],"Data Structures":["Complexity","Arrays & strings","Linked lists","Stacks & queues","Trees","Graphs & algorithms"],MuleSoft:["Mule 4 fundamentals","API-led connectivity","DataWeave","Connectors & error handling","MUnit & testing","Deployment & monitoring"],IELTS:["Reading strategies","Listening practice","Grammar & vocabulary","Speaking fluency","Writing task 1","Writing task 2"]};

@@ -34,13 +34,13 @@ function adaptPlan(){
  const future=p.days.filter(d=>d.date>=today());
  missed.forEach((t,i)=>{
    const target=future[i%Math.max(1,future.length)];
-   if(!target||target.tasks.some(x=>x.id===t.id))return;
+   if(!target||target.tasks.some(x=>x.id===t.id||x.recoveryOf===t.id))return;
    target.tasks.push({id:"recovery-"+t.id,text:"Recovery: "+t.text.replace(/^\w+:s*/,""),mins:Math.min(t.mins,Math.max(15,Math.round(p.hours*25))),topic:t.topic,type:"Recovery",difficulty:difficulty(t.topic),recovery:true});
  });
 }
-function completeTask(id,checked){
+function rebalanceTopic(topic){if(!state.plan)return;const future=state.plan.days.filter(d=>d.date>today());let completed=state.plan.days.flatMap(d=>d.tasks).filter(t=>t.topic===topic&&state.completed[t.id]).length;if(completed<2)return;future.forEach(d=>{d.tasks=d.tasks.filter(t=>!(t.topic===topic&&(t.type==="Learn"||t.type==="Practice")&&!t.recovery))})}\nfunction completeTask(id,checked){
  const task=state.plan?.days.flatMap(d=>d.tasks).find(t=>t.id===id);if(!task)return;
- if(checked){state.completed[id]=true;state.history.push({date:today(),type:"task",topic:task.topic,task:task.text,mins:task.mins});scheduleReview(task.topic,1)}
+ if(checked){state.completed[id]=true;state.history.push({date:today(),type:"task",topic:task.topic,task:task.text,mins:task.mins});scheduleReview(task.topic,1);rebalanceTopic(task.topic)}
  else delete state.completed[id];
  adaptPlan();save();renderAll();
 }
@@ -56,7 +56,7 @@ function renderDashboard(){
  const s=stats();$("progressPct").textContent=s.pct+"%";document.querySelector(".ring")?.style.setProperty("--p",s.pct+"%");$("doneCount").textContent=s.done.length;$("totalCount").textContent=s.all.length;$("streak").textContent=s.streak;$("todayProgress").textContent=(state.plan?.days.find(d=>d.date===today())?Math.round(state.plan.days.find(d=>d.date===today()).tasks.filter(t=>state.completed[t.id]).length/state.plan.days.find(d=>d.date===today()).tasks.length*100)+"%":"—");$("mastery").textContent=s.mastery+"%";$("studyHours").textContent=s.hours+"h";$("quizScore").textContent=s.quiz===null?"—":s.quiz+"%";$("missedTasks").textContent=s.missed;
  const p=state.plan;if(!p){$("planTitle").textContent="No plan yet";$("days").innerHTML='<div class="empty">Generate a plan to begin.</div>';return}
  $("planTitle").textContent=esc(p.goal)+" · "+esc(p.level);
- $("days").innerHTML=p.days.map((d,i)=>'<article class="day '+(d.date===today()?"today":"")+'"><div class="day-head"><span><b>Day '+(i+1)+' · '+esc(d.topic)+'</b>'+(d.date===today()?'<span class="today-tag">TODAY</span>':"")+(d.tasks.some(t=>t.recovery)?'<span class="adaptive-tag">RECOVERY</span>':"")+'</span><span>'+d.date+'</span></div><div class="tasks">'+d.tasks.map(t=>'<label class="task '+(state.completed[t.id]?"done":"")+'"><input type="checkbox" data-task="'+esc(t.id)+'" '+(state.completed[t.id]?"checked":"")+'><span>'+esc(t.text)+' <small>['+esc(t.difficulty||"Normal")+']</small></span><span class="badge">'+t.mins+'m</span></label>').join("")+'</div></article>').join("");
+ $("days").innerHTML=p.days.map((d,i)=>'<article class="day '+(d.date===today()?"today":"")+'" id="day-'+d.date+'"><div class="day-head"><span><b>Day '+(i+1)+' · '+esc(d.topic)+'</b>'+(d.date===today()?'<span class="today-tag">TODAY</span>':"")+(d.tasks.some(t=>t.recovery)?'<span class="adaptive-tag">RECOVERY</span>':"")+'</span><span>'+d.date+'</span></div><div class="tasks">'+d.tasks.map(t=>'<label class="task '+(state.completed[t.id]?"done":"")+'"><input type="checkbox" data-task="'+esc(t.id)+'" '+(state.completed[t.id]?"checked":"")+'><span>'+esc(t.text)+' <small>['+esc(t.difficulty||"Normal")+']</small></span><span class="badge">'+t.mins+'m</span></label>').join("")+'</div></article>').join("");
  document.querySelectorAll("[data-task]").forEach(x=>x.onchange=()=>completeTask(x.dataset.task,x.checked));
  const reviews=Object.entries(state.reviews).filter(([_,r])=>r.next).sort((a,b)=>a[1].next.localeCompare(b[1].next)).slice(0,8);
  $("reviews").innerHTML=reviews.length?reviews.map(([t,r])=>'<div class="review"><b>'+esc(t)+'</b><br><small>Next review: '+esc(r.next)+' · interval '+INTERVALS[r.level]+' day(s)</small></div>').join(""):'<p>Complete a task to create your first review.</p>';
@@ -75,6 +75,12 @@ let practice={topic:null,q:null,flipped:false};
 function newPractice(){
  if(!state.plan)return msg("Generate a plan first.");
  const d=state.plan.days.find(x=>x.date>=today()&&x.tasks.some(t=>!state.completed[t.id]))||state.plan.days[0],topic=d.topic,key=keyFor(topic),qs=BANK[key]||FALLBACK;practice={topic,q:qs[Math.floor(Math.random()*qs.length)],flipped:false};renderPractice();
+}
+function quickQuiz(){
+ if(!state.plan)return msg("Generate a plan first.");
+ const d=state.plan.days.find(x=>x.date>=today())||state.plan.days[0],topic=d.topic,key=keyFor(topic),qs=(BANK[key]||FALLBACK).slice(0,3);
+ $("quickQuizBox").innerHTML='<h3>Quick quiz · '+esc(topic)+'</h3>'+qs.map((q,i)=>'<div class="quiz-question"><b>'+(i+1)+'. '+esc(q[0])+'</b><textarea id="qq'+i+'" rows="2" placeholder="Answer from memory"></textarea><details><summary>Reveal answer</summary><p>'+esc(q[1])+'</p></details></div>').join("")+'<button class="primary small" id="scoreQuick">Score quiz</button><div id="quickResult"></div>';
+ $("scoreQuick").onclick=()=>{let score=0;qs.forEach((q,i)=>{const v=$("qq"+i).value.trim().toLowerCase();if(v&&q[1].toLowerCase().split(/[ .,]+/).some(w=>w.length>4&&v.includes(w)))score++});state.quizScores[topic]={topic,score,total:qs.length,date:today()};save();$("quickResult").innerHTML='<div class="result">Score: <b>'+score+'/'+qs.length+'</b>. Difficulty will adapt from this result.</div>';renderAll()};
 }
 function renderPractice(){
  if(!practice.q){$("flashcard").innerHTML="<b>Generate practice</b><p>Use active recall to strengthen memory.</p>";$("shortAnswer").innerHTML="<p>Start a practice session.</p>";return}
@@ -97,7 +103,7 @@ function aiPrompt(){const s=stats(),weak=Object.entries(state.reviews).sort((a,b
 function renderAll(){renderDashboard();renderNotes();renderAnalytics();if(!practice.q)renderPractice();$("aiSummary").textContent=aiPrompt()}
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab,.tab-panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");$(b.dataset.tab).classList.add("active")});
 $("generate").onclick=buildPlan;$("todayBtn").onclick=()=>{const d=state.plan?.days.find(x=>x.date===today())||state.plan?.days.find(x=>x.tasks.some(t=>!state.completed[t.id]));if(d)document.querySelector("#day-"+d.date)?.scrollIntoView({behavior:"smooth"})};
-$("newPractice").onclick=newPractice;$("flipCard").onclick=()=>{if(practice.q){practice.flipped=!practice.flipped;renderPractice()}};$("rateCard").onclick=()=>rateFlash(true);$("againCard").onclick=()=>rateFlash(false);$("checkShort").onclick=()=>{const v=$("shortInput")?.value.trim();if(!v)return;alert("Self-check: compare your answer with the flashcard answer. Then use 'I knew it' or 'Review again' to adjust spaced repetition.");};
+$("newPractice").onclick=newPractice;$("quickQuiz").onclick=quickQuiz;$("flipCard").onclick=()=>{if(practice.q){practice.flipped=!practice.flipped;renderPractice()}};$("rateCard").onclick=()=>rateFlash(true);$("againCard").onclick=()=>rateFlash(false);$("checkShort").onclick=()=>{const v=$("shortInput")?.value.trim();if(!v)return;alert("Self-check: compare your answer with the flashcard answer. Then use 'I knew it' or 'Review again' to adjust spaced repetition.");};
 $("mockTest").onclick=mock;$("saveNote").onclick=saveNote;$("exportData").onclick=exportData;$("importData").onchange=importData;$("calendarBtn").onclick=calendar;$("copyPrompt").onclick=async()=>{await navigator.clipboard?.writeText(aiPrompt());msg("AI prompt copied. Paste it into your preferred AI assistant.")};
 $("resetBtn").onclick=()=>{if(confirm("Reset all local planner data?")){localStorage.removeItem(KEY);localStorage.removeItem("ai-study-planner-v2");location.reload()}};
 if($("target"))$("target").value=state.plan?.target||add(today(),29);

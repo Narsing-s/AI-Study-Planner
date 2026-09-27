@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="AI Study Planner - build adaptive study plans, track progress, and practice with quizzes"><title>AI Study Planner</title><link rel="stylesheet" href="styles.css"></head>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="AI Study Planner - adaptive study plans, progress, mastery, streaks, and quizzes"><title>AI Study Planner</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"></head>
 <body><div class="app">
 <header><div><span class="eyebrow">AI STUDY PLANNER</span><h1>Study smarter. Stay consistent.</h1><p>Create a realistic plan around your goal, time, level, and deadline.</p></div><button id="resetBtn" class="ghost">Reset</button></header>
 <main>
@@ -19,4 +19,4 @@
 <div class="card"><div class="section-head"><h2>Practice quiz</h2><button id="quizBtn" class="primary small">Generate quiz</button></div><div id="quiz"><div class="empty">Complete a topic to unlock practice questions.</div></div></div>
 <div class="card"><h2>Study insights</h2><div id="insights" class="insights"><p>💡 Your plan will adapt as you complete tasks.</p><p>🔁 Revision is automatically included after each topic.</p><p>🎯 Keep sessions short enough to finish consistently.</p></div></div>
 </section>
-</main><footer>AI Study Planner · Open-source MVP</footer></div><script src="app.js"></script></body></html>
+<section class="card metrics"><div><span>Today</span><b id="todayProgress">—</b></div><div><span>Mastery</span><b id="mastery">0%</b></div><div><span>Study time</span><b id="studyHours">0h</b></div><div><span>Quiz average</span><b id="quizScore">—</b></div></section></main><footer>AI Study Planner · Open-source MVP</footer></div><script src="app.js"></script><script>if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");</script></body></html>

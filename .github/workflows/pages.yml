@@ -11,28 +11,28 @@ concurrency:
   group: pages
   cancel-in-progress: true
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v6
-      - name: Validate
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Validate static app
         run: |
           test -f index.html
           test -f app.js
           test -f styles.css
+          test -f manifest.webmanifest
+          test -f sw.js
+          node --check app.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: .
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

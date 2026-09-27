@@ -1,22 +1,40 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="AI Study Planner - adaptive study plans, progress, mastery, streaks, and quizzes"><title>AI Study Planner</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="AI Study Planner — adaptive planning, spaced repetition, practice, notes, analytics and backup">
+<meta name="theme-color" content="#090d18"><link rel="manifest" href="manifest.webmanifest">
+<title>AI Study Planner</title><link rel="stylesheet" href="styles.css">
+</head>
 <body><div class="app">
-<header><div><span class="eyebrow">AI STUDY PLANNER</span><h1>Study smarter. Stay consistent.</h1><p>Create a realistic plan around your goal, time, level, and deadline.</p></div><button id="resetBtn" class="ghost">Reset</button></header>
+<header><div><span class="eyebrow">AI STUDY PLANNER</span><h1>Study smarter. Stay consistent.</h1><p>Adaptive planning that reacts to what you complete, miss and actually learn.</p></div><button id="resetBtn" class="ghost">Reset</button></header>
+<nav class="tabs" aria-label="Sections">
+<button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="practice">Practice</button><button class="tab" data-tab="notes">Notes</button><button class="tab" data-tab="analytics">Analytics</button><button class="tab" data-tab="data">Backup & AI</button>
+</nav>
 <main>
-<section class="hero-grid">
-<div class="card setup"><h2>Create your study plan</h2><div class="grid">
-<label>What do you want to learn?<input id="goal" placeholder="e.g. Java, Data Structures, IELTS"></label>
-<label>Current level<select id="level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
-<label>Target date<input id="target" type="date"></label>
-<label>Hours per day<input id="hours" type="number" min="0.5" max="12" step="0.5" value="2"></label>
-<label>Days per week<input id="days" type="number" min="1" max="7" value="6"></label>
+<section id="dashboard" class="tab-panel active">
+<section class="hero-grid"><div class="card setup"><h2>Create / update your plan</h2><div class="grid">
+<label>Learning goal<input id="goal" placeholder="e.g. Java, Data Structures, IELTS, MuleSoft"></label>
+<label>Level<select id="level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
+<label>Target date<input id="target" type="date"></label><label>Hours/day<input id="hours" type="number" min=".5" max="12" step=".5" value="2"></label>
+<label>Days/week<input id="days" type="number" min="1" max="7" value="6"></label>
 <label>Learning style<select id="style"><option>Balanced</option><option>Practice first</option><option>Concept first</option><option>Interview focused</option></select></label>
-</div><button id="generate" class="primary">Generate my plan</button><p id="message" class="message"></p></div>
-<div class="card snapshot"><h2>Progress</h2><div class="ring"><strong id="progressPct">0%</strong><span>complete</span></div><div class="stats"><div><b id="doneCount">0</b><span>Tasks done</span></div><div><b id="totalCount">0</b><span>Total tasks</span></div><div><b id="streak">0</b><span>Day streak</span></div></div></div>
+</div><button id="generate" class="primary">Generate adaptive plan</button><p id="message" class="message"></p></div>
+<div class="card snapshot"><h2>Overall progress</h2><div class="ring"><strong id="progressPct">0%</strong><span>complete</span></div><div class="stats"><div><b id="doneCount">0</b><span>Done</span></div><div><b id="totalCount">0</b><span>Tasks</span></div><div><b id="streak">0</b><span>Day streak</span></div></div></div></section>
+<section class="metrics"><div><span>Today</span><b id="todayProgress">—</b></div><div><span>Mastery</span><b id="mastery">0%</b></div><div><span>Study time</span><b id="studyHours">0h</b></div><div><span>Quiz avg</span><b id="quizScore">—</b></div><div><span>Missed</span><b id="missedTasks">0</b></div></section>
+<section class="card"><div class="section-head"><div><span class="eyebrow">ADAPTIVE ROADMAP</span><h2 id="planTitle">No plan yet</h2></div><button id="todayBtn" class="ghost">Today's focus</button></div><div id="days" class="days"><div class="empty">Generate a plan to begin.</div></div></section>
+<section class="lower-grid"><div class="card"><h2>Spaced repetition</h2><div id="reviews" class="insights"><p>Complete a task to create your first review.</p></div></div><div class="card"><h2>Study insights</h2><div id="insights" class="insights"><p>Adaptive recommendations will appear here.</p></div></div></section>
 </section>
-<section class="card plan"><div class="section-head"><div><span class="eyebrow">YOUR ROADMAP</span><h2 id="planTitle">No plan yet</h2></div><button id="todayBtn" class="ghost">Today's focus</button></div><div id="days" class="days"><div class="empty">Generate a plan to see your study roadmap.</div></div></section>
-<section class="lower-grid">
-<div class="card"><div class="section-head"><h2>Practice quiz</h2><button id="quizBtn" class="primary small">Generate quiz</button></div><div id="quiz"><div class="empty">Complete a topic to unlock practice questions.</div></div></div>
-<div class="card"><h2>Study insights</h2><div id="insights" class="insights"><p>💡 Your plan will adapt as you complete tasks.</p><p>🔁 Revision is automatically included after each topic.</p><p>🎯 Keep sessions short enough to finish consistently.</p></div></div>
-</section>
-<section class="card metrics"><div><span>Today</span><b id="todayProgress">—</b></div><div><span>Mastery</span><b id="mastery">0%</b></div><div><span>Study time</span><b id="studyHours">0h</b></div><div><span>Quiz average</span><b id="quizScore">—</b></div><div><span>Missed tasks</span><b id="missedTasks">0</b></div></section></main><footer>AI Study Planner · Open-source MVP</footer></div><script src="app.js"></script><script>if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");</script></body></html>
+
+<section id="practice" class="tab-panel"><div class="card"><div class="section-head"><div><span class="eyebrow">PRACTICE LAB</span><h2>Active recall</h2></div><button id="newPractice" class="primary">New practice</button></div><div class="practice-grid"><div><h3>Flashcards</h3><div id="flashcard" class="flashcard"><b>Generate practice</b><p>Flashcards use the current topic and your review schedule.</p></div><button id="flipCard" class="ghost">Flip card</button><button id="rateCard" class="primary small">I knew it</button><button id="againCard" class="ghost small">Review again</button></div><div><h3>Short answer</h3><div id="shortAnswer"></div><button id="checkShort" class="primary small">Check answer</button></div></div>
+<hr><div class="section-head"><h3>Mock test</h3><button id="mockTest" class="primary small">Start 10-question test</button></div><div id="mock"></div></div></section>
+
+<section id="notes" class="tab-panel"><div class="card"><div class="section-head"><div><span class="eyebrow">KNOWLEDGE BASE</span><h2>Topic notes</h2></div><button id="saveNote" class="primary">Save note</button></div><div class="grid"><label>Topic<select id="noteTopic"></select></label><label>Note title<input id="noteTitle" placeholder="Key concept"></label></div><label>Notes<textarea id="noteBody" rows="8" placeholder="Write your explanation, examples, mistakes or interview points..."></textarea></label><div id="notesList" class="notes-list"></div></div></section>
+
+<section id="analytics" class="tab-panel"><div class="card"><span class="eyebrow">HISTORY</span><h2>Study analytics</h2><div id="analyticsGrid" class="analytics-grid"></div><div id="history" class="history"></div></div></section>
+
+<section id="data" class="tab-panel"><div class="card"><span class="eyebrow">PORTABILITY</span><h2>Backup, calendar & AI</h2><div class="action-grid"><button id="exportData" class="primary">Export backup</button><label class="file-button">Import backup<input id="importData" type="file" accept="application/json"></label><button id="calendarBtn" class="ghost">Export calendar (.ics)</button></div>
+<hr><h3>Optional AI assistant</h3><p>Keep the app free and private: generate a ready-to-paste AI prompt from your current weak topics. No API key is stored in this static app.</p><div id="aiSummary" class="prompt-box"></div><button id="copyPrompt" class="primary">Copy AI prompt</button><h3>Adaptive engine</h3><p>Missed tasks are moved to the next available study slots, completed work reduces duplicate workload, and quiz performance changes topic difficulty and review priority.</p></div></section>
+</main><footer>AI Study Planner · Free · Local-first · No account required</footer></div>
+<script src="app.js"></script><script>if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");</script>
+</body></html>

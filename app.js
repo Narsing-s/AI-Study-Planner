@@ -9,7 +9,13 @@ function parseISO(s){return new Date(s+"T00:00:00")}
 function addDays(s,n){const d=parseISO(s);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
 function escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function makeTopics(goal){const key=Object.keys(topics).find(k=>goal.toLowerCase().includes(k.toLowerCase()));return topics[key]||[goal+" fundamentals",goal+" core concepts",goal+" practical exercises",goal+" advanced topics",goal+" revision",goal+" mock assessment"]}
-function activeDay(date,n){const d=parseISO(date).getDay();return n>=7||d>0&&d<=n}
+function activeDay(date,n){
+ const d=parseISO(date).getDay();
+ if(n>=7)return true;
+ if(d===0)return false;
+ const schedules={1:[1],2:[1,4],3:[1,3,6],4:[1,2,4,6],5:[1,2,3,5,6],6:[1,2,3,4,5,6]};
+ return (schedules[n]||schedules[6]).includes(d);
+}
 function message(t,k=""){const e=$("message");e.textContent=t;e.className="message "+k}
 function buildPlan(){
  const goal=$("goal").value.trim();if(!goal)return message("Enter a learning goal first.","error");
@@ -27,9 +33,13 @@ function stats(){
  const mastery=Object.values(groups).length?Math.round(Object.values(groups).reduce((x,g)=>x+g.d/g.a*100,0)/Object.values(groups).length):0;
  return{all,done,pct,streak,mastery,hours:Math.round(done.reduce((x,t)=>x+t.mins,0)/60*10)/10}
 }
+function missedCount(){
+ if(!state.plan)return 0;
+ return state.plan.days.filter(d=>d.date<todayISO()&&d.tasks.some(t=>!state.completed[t.id])).reduce((n,d)=>n+d.tasks.filter(t=>!state.completed[t.id]).length,0);
+}
 function latestQuiz(){const a=Object.values(state.quizScores||{});return a.length?Math.round(a.reduce((x,v)=>x+v.score/v.total,0)/a.length*100)+"%":"—"}
 function updateStats(){
- const s=stats();$("progressPct").textContent=s.pct+"%";document.querySelector(".ring")?.style.setProperty("--p",s.pct+"%");$("doneCount").textContent=s.done.length;$("totalCount").textContent=s.all.length;$("streak").textContent=s.streak;$("mastery").textContent=s.mastery+"%";$("studyHours").textContent=s.hours+"h";$("quizScore").textContent=latestQuiz();
+ const s=stats();$("progressPct").textContent=s.pct+"%";document.querySelector(".ring")?.style.setProperty("--p",s.pct+"%");$("doneCount").textContent=s.done.length;$("totalCount").textContent=s.all.length;$("streak").textContent=s.streak;$("mastery").textContent=s.mastery+"%";$("studyHours").textContent=s.hours+"h";$("quizScore").textContent=latestQuiz();if($("missedTasks"))$("missedTasks").textContent=missedCount();
  const d=state.plan?.days.find(x=>x.date===todayISO());$("todayProgress").textContent=d?Math.round(d.tasks.filter(t=>state.completed[t.id]).length/d.tasks.length*100)+"%":"—";
  if(state.plan){const next=state.plan.days.find(x=>x.date>=todayISO()&&x.tasks.some(t=>!state.completed[t.id]));$("insights").innerHTML="<p>🎯 <b>Mastery:</b> "+s.mastery+"% of planned work is complete.</p><p>⏱️ <b>Study time:</b> "+s.hours+" hours logged.</p><p>🔥 <b>Streak:</b> "+s.streak+" day"+(s.streak===1?"":"s")+" in a row.</p><p>📌 <b>Next:</b> "+(next?escapeHTML(next.topic):"Plan complete — review your weakest topic.")+"</p>"}
 }
